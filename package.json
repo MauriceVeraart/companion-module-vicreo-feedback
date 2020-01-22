@@ -1,0 +1,19 @@
+{
+	"name": "vicreo-feedback",
+	"version": "0.0.1",
+	"api_version": "1.0.0",
+	"keywords": [
+		"Software",
+		"Feedback catcher"
+		],
+	"manufacturer": "VICREO",
+	"product": "Feedback",
+	"shortname": "VICREO feedback",
+	"description": "VICREO feedback plugin for Companion",
+	"main": "index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"author": "Jeffrey Davidsz <jeffrey.davidsz@vicreo.eu>",
+	"license": "MIT"
+}

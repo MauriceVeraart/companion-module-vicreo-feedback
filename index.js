@@ -31,8 +31,16 @@ class instance extends instance_skel {
 			},
 			{
                 type: 'textinput',
+                id: 'urltoget',
+                label: 'url to fetch',
+                default: '',
+                width: 12
+            },
+            {
+                type: 'textinput',
                 id: 'vartoget',
-                label: 'var to get',
+                label: 'var to fetch',
+                default: '',
                 width: 12
             }
 		]
@@ -49,40 +57,57 @@ class instance extends instance_skel {
                 break
         }
 
-        this.system.emit('rest_get', cmd, (err, result) =>  {
-            if (err !== null) {
-                this.log('error', 'HTTP GET Request failed (' + result.error.code + ')');
-                this.status(this.STATUS_ERROR, result.error.code);
-            }
-            else {
-                // let vartoget = this.config.vartoget
-                console.log(result.data.MainClock)
-                this.setVariable('dynamic1', result.data.MainClock );
-            }
-        });
+        
         
     }
     
+    getData() {
+        if(this.config.urltoget !== "" && this.config.urltoget !== undefined) {
+            
+            let name = (this.config.vartoget !== undefined) ? this.config.vartoget : "MainClock"
+            let cmd = this.config.urltoget
+
+            try {
+                this.timer = setInterval(() => {
+                
+                
+                    this.system.emit('rest_get', cmd, (err, result) =>  {
+                        if (err !== null) {
+                            this.log('error', 'HTTP GET Request failed (' + result.error.code + ')');
+                            this.status(this.STATUS_ERROR, result.error.code);
+                        }
+                        else {
+                            this.setVariable('dynamic1', result.data[name])
+                        }
+                    })
+                } , 1000) // Every second
+            }
+            catch (error) {
+                console.error('(timerstuff) Error cause is:', error);    
+            }
+        }
+    }
+
     destroy() {
 
-		// if (this.timer) {
-		// 	clearInterval(this.timer);
-		// 	delete this.timer;
-		// }
-
-		if (this.socket !== undefined) {
-			this.socket.destroy();
+        
+		if (this.timer) {
+			clearInterval(this.timer);
+			delete this.timer;
 		}
+
 		debug("destroy", this.id);
     }
     
     init() {
 		debug = this.debug;
-		log = this.log;
+        log = this.log;
+        var self = this
 
         this.init_variables()
-
-        this.status(this.STATE_OK);
+        
+        this.status(this.STATE_OK)
+        this.getData()
  
     }
     
@@ -91,6 +116,11 @@ class instance extends instance_skel {
         this.config = config;
     
         this.actions();
+        if (this.timer) {
+			clearInterval(this.timer);
+			delete this.timer;
+        }
+        this.getData()
     }
 
     init_variables() {
